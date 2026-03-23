@@ -1,76 +1,60 @@
-🎰 ChainGuess | Solana Hackathon 2026
-ChainGuess es un protocolo de juego on-chain desarrollado en Rust con el framework Anchor. El contrato gestiona el ciclo de vida completo de una apuesta: compromiso de fondos, validación de aciertos y liquidación instantánea del premio mediante la arquitectura de Solana.
+# 🎰 ChainGuess | Solana Hackathon 2026
+> **A high-performance, decentralized gaming protocol built on Solana.**
 
-📖 Tabla de Contenidos
-
-* Visión General
-
-* Arquitectura del Contrato
-
-* Seguridad y Optimización
-
-* Guía de Ejecución
-
-* Estructura del Proyecto
-
-🎯 Visión General
-
-ChainGuess elimina la necesidad de intermediarios en los juegos de azar. El contrato actúa como un "Escrow" inteligente que retiene la apuesta inicial y solo libera los fondos cuando se verifica matemáticamente que el usuario ha adivinado el número secreto.
-
-## 🎨 Interfaz de Usuario (Frontend Mockup)
-
-Para complementar la lógica on-chain, se ha diseñado una experiencia de usuario (UX) moderna y de alta fidelidad en **Figma**. El diseño está optimizado para la navegación Web3, facilitando la conexión de wallets y la interacción con el contrato inteligente.
-
-* **Prototipo Interactivo:** [Explorar Diseño en Figma](https://www.figma.com/make/QVKkmzSjYEK1mxfVhmYxLm/Web3-Crypto-Dashboard?t=nw0C7RNujayO4dre-1)
-
-### Componentes Diseñados:
-* **Dashboard de Usuario:** Visualización en tiempo real de balances en SOL y estadísticas de juego.
-* **Módulo de Apuestas:** Interfaz limpia para el ingreso de predicciones (inputs) y ejecución de transacciones.
-* **Leaderboard dinámico:** Diseño pensado para mostrar el ranking de ganadores extrayendo datos de las cuentas del programa.
+[![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=black)](https://explorer.solana.com/?cluster=devnet)
+[![Framework: Anchor](https://img.shields.io/badge/Framework-Anchor_0.29.0-38429F?style=for-the-badge)](https://www.anchor-lang.com/)
+[![Language: Rust](https://img.shields.io/badge/Language-Rust-DEA584?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
 
 ---
 
-🏗️ Arquitectura del Contrato
+## 🎯 Visión General
+**ChainGuess** es un protocolo de juego on-chain que elimina la necesidad de intermediarios. El contrato actúa como un **Escrow inteligente** que gestiona el ciclo de vida completo de una apuesta: compromiso de fondos, validación de aciertos y liquidación instantánea del premio mediante la arquitectura paralela de Solana.
 
-Program Derived Addresses (PDAs)
-Implementamos PDAs dinámicas para garantizar que cada partida sea única y aislada. La dirección se deriva de:
-seeds = [seed_id.as_bytes(), user.key().as_ref()]
+### 🎨 Interfaz de Usuario (Mockup Profesional)
+Para complementar la lógica de bajo nivel, se diseñó una experiencia de usuario (UX) moderna y de alta fidelidad, optimizada para la navegación Web3 y la interacción fluida con wallets.
 
-Instrucciones Principales
+👉 **[Explorar Diseño Prototipo en Figma](https://www.figma.com/make/QVKkmzSjYEK1mxfVhmYxLm/Web3-Crypto-Dashboard?t=nw0C7RNujayO4dre-1)**
 
-initialize: Configura la partida, establece el número secreto y realiza un CPI (Cross-Program Invocation) para depositar el SOL del usuario en la cuenta del juego.
+---
 
-guess: Procesa los intentos del usuario. Si el número coincide, marca el estado como ganado y transfiere el premio automáticamente.
+## 🏗️ Arquitectura del Contrato
 
-🔐 Seguridad y Optimización
+| Componente | Descripción |
+| :--- | :--- |
+| **PDA Management** | Implementamos *Program Derived Addresses* dinámicas para garantizar partidas únicas: `seeds = [seed_id, user.key()]`. |
+| **Atomic Settlement** | La validación del número secreto y el pago de premios ocurren en una única instrucción atómica. |
+| **Direct Manipulation** | Optimización de *Compute Units* (CU) modificando directamente los Lamports de las cuentas. |
 
-Atomicidad: La validación y el pago ocurren en la misma transacción. Si algo falla, el estado no se altera.
+### Instrucciones Principales
+* `initialize`: Configura la partida, cifra el estado inicial y ejecuta un **CPI (Cross-Program Invocation)** para el depósito de fondos.
+* `guess`: Valida el intento del usuario contra el estado de la cuenta. Si es correcto, el contrato dispara un pago automático instantáneo.
 
-Direct Lamport Manipulation: Optimizamos el consumo de Compute Units (CU) modificando directamente los balances de las cuentas en lugar de usar instrucciones de transferencia externas.
+---
 
-Manejo de Errores: Códigos de error personalizados (ej. AlreadyWon) para evitar reintegros dobles o intentos en juegos finalizados.
+## 🔐 Seguridad y Optimización
+* **Manejo de Errores Custom:** Implementación de errores específicos (`AlreadyWon`, `InvalidGuess`) para prevenir ataques de re-entrada o doble gasto.
+* **Account Validation:** Verificación estricta de *owners* y *signers* para evitar inyecciones de cuentas maliciosas.
+* **Status: MVP Functional ✅**
 
-🚀 Guía de Ejecución en Solana Playground
+---
 
-1. Despliegue (Deploy)
-ID del Programa: FydUWyryHSJWsofMMTz5kCNnuRUVEW2hMoDPX8iik8Xj
+## 🚀 Guía de Ejecución Rápida
 
-Red: Solana Devnet.
+### 1. Despliegue (Deploy)
+* **Program ID:** `FydUWyryHSJWsofMMTz5kCNnuRUVEW2hMoDPX8iik8Xj`
+* **Cluster:** Solana Devnet
 
-2. Pruebas (Tests)
-Ejecuta la suite en tests/chain_guess.test.ts.
+### 2. Pruebas e Interacción
+```bash
+# Ejecutar suite de pruebas de integración
+anchor test
 
-Los tests incluyen sincronización de red mediante confirmTransaction para asegurar la integridad de los datos en tiempo real.
-
-3. Cliente (App)
-Ejecuta run client/app.ts para ver la interacción completa desde la terminal, incluyendo logs detallados del proceso de victoria.
-
-📁 Estructura del Proyecto
-
-programs/chain_guess/src/lib.rs: Lógica del Smart Contract en Rust.
-
-tests/chain_guess.test.ts: Suite de pruebas de integración en TypeScript.
-
-client/app.ts: Script de cliente para demostración rápida.
-
-Desarrollado para el Solana Hackathon 2026. Status: MVP Functional ✅
+# Ejecutar cliente de demostración (Terminal UI)
+run client/app.ts
+📁 Estructura del Repositorio
+Plaintext
+├── programs/chain_guess/src/lib.rs  # Lógica del Smart Contract (Rust)
+├── tests/chain_guess.test.ts        # Pruebas de integración (TypeScript)
+├── client/app.ts                    # Script de interacción de cliente
+└── target/                          # Artefactos de compilación (BPF)
+Desarrollado para el Solana Hackathon 2026. Innovando en la transparencia de los juegos de azar mediante tecnología blockchain.
